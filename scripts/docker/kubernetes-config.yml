@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: 925r-config
+data:
+  config: |
+    SECRET_KEY: mae3fo4dooJaiteth2emeaNga1biey9ia8FaiQuooYoac8phohee7r
+    ALLOWED_HOSTS: '*'
+    DEBUG: True
+    DATABASES:
+      default:
+        ENGINE: 'django.db.backends.mysql'
+        NAME: '925r'
+        USER: '925r'
+        PASSWORD: 'veryunsecure'
+        HOST: 'mysql'
+        PORT: '3306'

@@ -1,0 +1,80 @@
+---
+# Create the services BEFORE deployment, so all the pods are not created on same node
+apiVersion: v1
+kind: Service
+metadata:
+  name: ldap
+  labels:
+    app: ldap
+spec:
+  ports:
+  - port: 389
+  selector:
+    app: ldap
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k925r
+  labels:
+    app: k925r
+spec:
+  ports:
+  - port: 8000
+  selector:
+    app: k925r
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ldap
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ldap
+    spec:
+      containers:
+      - name: ldap
+        image: osixia/openldap:1.1.7
+        ports:
+        - containerPort: 389
+---
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k925r
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: k925r
+    spec:
+      containers:
+      - name: k925r
+        image: roidelapluie/925r:latest
+        env:
+          - name: DJANGO_CONFIGURATION
+            value: Prod
+        ports:
+        - containerPort: 8000
+        args:
+        - python
+        - manage.py
+        - runserver
+        - '0.0.0.0:8000'
+        - '--insecure'
+        volumeMounts:
+          - name: 925r-config
+            mountPath: /etc/925r
+      volumes:
+      - name: 925r-config
+        configMap:
+          name: 925r-config
+          items:
+          - key: config
+            path: config.yml
